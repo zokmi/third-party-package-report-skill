@@ -1,0 +1,22 @@
+{
+  "name": "third-party-package-report",
+  "version": "1.2.0",
+  "description": "盤點 .NET／Angular 第三方套件，以 Markdown 報告與獨立子代理檢核交付。",
+  "author": {
+    "name": "zokmi"
+  },
+  "repository": "https://github.com/zokmi/third-party-package-report-skill",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Third-party Packages",
+    "shortDescription": "第三方套件盤點與 Markdown 報告",
+    "longDescription": "盤點 .NET／Angular 第三方套件，以 Markdown 報告與獨立子代理檢核交付。",
+    "developerName": "zokmi",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": "盤點指定 .NET API 或 Angular 入口的第三方套件，產生 Markdown 報告，產出後派唯讀子代理檢核。"
+  }
+}

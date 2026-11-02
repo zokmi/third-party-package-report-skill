@@ -1,0 +1,10 @@
+{
+  "name": "third-party-package-report",
+  "version": "1.2.0",
+  "description": "盤點 .NET／Angular 第三方套件，以 Markdown 報告與獨立子代理檢核交付。",
+  "author": {
+    "name": "zokmi"
+  },
+  "repository": "https://github.com/zokmi/third-party-package-report-skill",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+}

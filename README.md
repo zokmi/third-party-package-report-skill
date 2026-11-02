@@ -1,76 +1,89 @@
-# Third-party Package Report Skill
+# Third-party Package Report Plugin
 
-盤點 .NET API 與 Angular 的第三方套件，以使用證據與實際版本授權產出 Markdown 清單，交付前由獨立唯讀子代理檢核。
+透過 Claude Code／Codex 的 plugin 管理器安裝、更新與移除。盤點 .NET API 與 Angular 的第三方套件，依證據產出 Markdown 清單，交付前由獨立唯讀子代理檢核。
 
-## 安裝
+## 安裝前準備
 
-需要 Git、Python 3，以及可啟動獨立子代理的 Claude Code 或 Codex。以下為個人 skill 安裝，兩個工具可分別安裝；若目標目錄已存在，先備份既有版本。
+需要 Git、Python 3，以及支援 plugin 和獨立子代理的 Claude Code 或 Codex。先確認 `git --version`、`python --version` 與目標工具的 `plugin --help` 可執行；不支援下列命令時先更新工具。
 
-### Claude Code
+Marketplace：`third-party-package-plugins`；plugin ID：`third-party-package-report@third-party-package-plugins`。
 
-Bash／zsh：
+以下是終端機 CLI 指令，適用 Bash／zsh 與 PowerShell。僅安裝你要使用的工具。
 
-```sh
-mkdir -p ~/.claude/skills
-git clone https://github.com/zokmi/third-party-package-report-skill.git ~/.claude/skills/generating-third-party-package-report
-```
-
-Windows PowerShell：
-
-```powershell
-New-Item -ItemType Directory -Force "$HOME/.claude/skills" | Out-Null
-git clone https://github.com/zokmi/third-party-package-report-skill.git "$HOME/.claude/skills/generating-third-party-package-report"
-```
-
-重新啟動 Claude Code，請它「使用 generating-third-party-package-report 盤點指定 API 或前端入口」。
-
-### Codex
-
-Bash／zsh：
+## Claude Code 安裝
 
 ```sh
-mkdir -p ~/.agents/skills
-git clone https://github.com/zokmi/third-party-package-report-skill.git ~/.agents/skills/generating-third-party-package-report
+claude plugin marketplace add https://github.com/zokmi/third-party-package-report-skill.git --scope user --json
+claude plugin install third-party-package-report@third-party-package-plugins --scope user --json
 ```
 
-Windows PowerShell：
+重新啟動 Claude Code，呼叫 `/third-party-package-report:generating-third-party-package-report`，並提供 `.csproj`、`.sln` 或 `package.json` 入口。
 
-```powershell
-New-Item -ItemType Directory -Force "$HOME/.agents/skills" | Out-Null
-git clone https://github.com/zokmi/third-party-package-report-skill.git "$HOME/.agents/skills/generating-third-party-package-report"
-```
-
-Codex 的個人 skill 位置為 `~/.agents/skills`，也可在專案的 `.agents/skills/generating-third-party-package-report` 安裝。安裝後請 Codex「使用 generating-third-party-package-report 盤點指定入口」；CLI／IDE 亦可用 `$generating-third-party-package-report` 明確呼叫。若未顯示新 skill，重新啟動 Codex。位置與載入方式依據 [OpenAI 官方 skill 文件](https://learn.chatgpt.com/docs/build-skills)。
-
-兩個工具皆須能啟動獨立子代理，才能完成交付檢核；無法啟動時只保留草稿並回報 `UNAVAILABLE`。
-
-### 更新
-
-在對應安裝目錄執行 `git pull --ff-only`，再重新載入工具。若曾手動修改已安裝檔案，先備份並處理差異。Release 頁亦提供版本 ZIP；解壓後將含 `SKILL.md`、`assets/`、`scripts/` 的整個資料夾放至上述位置，資料夾命名為 `generating-third-party-package-report`。
-
-## 使用
-
-提供 `.csproj`、`.sln` 或 `package.json` 入口；Angular 請先安裝專案相依套件。以下手動指令從本 skill 根目錄執行；代理應依實際載入路徑定位腳本，從其他目錄執行時使用腳本及專案入口的絕對路徑。
+更新：
 
 ```sh
-python -I scripts/collect_packages.py path/to/App.Api.csproj path/to/frontend/package.json > packages.json
+claude plugin marketplace update third-party-package-plugins --json
+claude plugin update third-party-package-report@third-party-package-plugins --scope user --json
 ```
 
-腳本只輸出 JSON 證據；Markdown 報告由代理依 `SKILL.md` 與 `assets/report-template.md` 產生，預設路徑為 `docs/<範圍>-第三方套件清單.md`。
+移除：
 
-- 只列使用中的套件，固定七欄，附授權彙總。
-- 收集直接參考、版本、授權中繼資料及使用證據；不展開所有遞移相依。
-- .NET 會沿 ProjectReference 展開；授權讀本機 NuGet 快取或 node_modules，缺漏由代理另行查證。
+```sh
+claude plugin uninstall third-party-package-report@third-party-package-plugins --scope user
+```
+
+## Codex 安裝
+
+```sh
+codex plugin marketplace add https://github.com/zokmi/third-party-package-report-skill.git --ref main --json
+codex plugin add third-party-package-report@third-party-package-plugins --json
+```
+
+重新載入 Codex，請它「使用 generating-third-party-package-report 盤點指定入口」；也可從 skill 選擇器選取該技能。
+
+更新：
+
+```sh
+codex plugin marketplace upgrade third-party-package-plugins --json
+codex plugin add third-party-package-report@third-party-package-plugins --json
+```
+
+移除：
+
+```sh
+codex plugin remove third-party-package-report@third-party-package-plugins --json
+```
+
+## 給 agent：安裝、更新與遷移
+
+使用者要求安裝時，先讀目標 CLI 子命令的 `--help`，再用 `plugin marketplace list --json` 與 `plugin list --json` 查現況。已有正確來源就更新，不重複新增；每一步檢查退出碼，失敗就停止後續遷移。未指定工具時以目前工具為準，不同時安裝兩邊。
+
+舊版 v1.0／v1.1 直接放在 `~/.claude/skills/generating-third-party-package-report` 或 `~/.agents/skills/generating-third-party-package-report` 的安裝，請在 plugin 安裝並確認載入成功後，將舊資料夾移到 skills 載入目錄外備份，避免重複技能。只處理已確認屬於本套件的舊資料夾，保留其他 skills；新版以 plugin 管理器維護，不再 clone 至 skills 目錄或以 `git pull` 更新。
+
+## 使用與交付
+
+Angular 請先安裝專案相依套件。代理依實際載入的 `SKILL.md` 定位同層 `scripts/` 與 `assets/`，不假設 plugin 快取位置或目前工作目錄。
+
+- 支援 .NET API 與 Angular；收集直接參考、版本、授權中繼資料及使用證據，不展開所有遞移相依。
+- .NET 沿 ProjectReference 展開；授權讀本機 NuGet 快取或 node_modules，缺漏另行查證。
 - `not-found` 不等於可移除，須人工排查。
-- 最終報告須由唯讀子代理讀取報告及原始證據，全部適用項目 PASS 才交付；修改後重新檢核。
-- 無法啟動子代理或證據不足時保留草稿並回報缺口。
+- 只列使用中的套件，固定七欄並附授權彙總，預設輸出 `docs/<範圍>-第三方套件清單.md`。
+- 最終報告由唯讀子代理讀取報告及原始證據，全部適用項目 PASS 才交付；修改後重新檢核。
+- 無法啟動子代理或證據不足時保留草稿並回報 `UNAVAILABLE`／`UNVERIFIED`。
 
-## 檔案
+## 專案結構
 
-| 檔案 | 用途 |
-| --- | --- |
-| SKILL.md | 分析、Markdown 產出與子代理檢核流程 |
-| assets/report-template.md | 七欄報告及授權彙總樣板 |
-| scripts/collect_packages.py | 使用 Python 標準函式庫收集 .NET／Angular 套件證據 |
+```text
+.claude-plugin/plugin.json       Claude Code plugin manifest
+.claude-plugin/marketplace.json  兩個工具使用的 marketplace
+.codex-plugin/plugin.json        Codex plugin manifest
+plugin.json                      可攜式 plugin metadata
+skills/generating-third-party-package-report/
+  SKILL.md
+  assets/report-template.md
+  scripts/collect_packages.py
+```
 
-此工具協助整理授權證據，不取代個別套件授權條款的查證。
+Release ZIP 是完整 plugin 原始封裝；一般使用者依上述 marketplace 指令安裝。
+
+格式參考：[Claude Code marketplace 文件](https://code.claude.com/docs/en/plugin-marketplaces)、[OpenAI plugin 文件](https://developers.openai.com/plugins/deploy/submission)。本工具協助整理授權證據，不取代個別授權條款查證。

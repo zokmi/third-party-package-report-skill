@@ -1,0 +1,14 @@
+{
+  "name": "third-party-package-plugins",
+  "owner": {
+    "name": "zokmi"
+  },
+  "plugins": [
+    {
+      "name": "third-party-package-report",
+      "source": "./",
+      "description": "盤點 .NET／Angular 第三方套件，以 Markdown 報告與獨立子代理檢核交付。"
+    }
+  ],
+  "description": "第三方套件盤點與 Markdown 報告 plugin"
+}
