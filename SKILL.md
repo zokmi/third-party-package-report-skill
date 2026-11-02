@@ -11,12 +11,16 @@ description: Use when asked to list, inventory, or audit third-party packages, d
 
 報告不放「使用狀態」欄、不列未使用／可移除／待確認的套件、不放已移除套件或異動歷程。這些分析結果寫在對話回報（第 8 步），由使用者決定是否處理；處理完重跑時，報告一樣只反映當下使用中的套件。
 
+## 執行環境
+
+支援 Claude Code 與 Codex，兩者使用相同的分析、Markdown 樣板與子代理檢核流程。執行前以本次實際載入的 `SKILL.md` 所在目錄作為 skill 根目錄；`scripts/` 與 `assets/` 均相對於此根目錄解析，不依賴目前工作目錄或固定的個人安裝路徑。使用當前工具提供的子代理能力執行第 7 步；無此能力時依 `UNAVAILABLE` 處理。
+
 ## 流程
 
 1. **確認範圍**：問清楚入口（例如 `webAPI/App.Api/App.Api.csproj`、`frontend/package.json`，或兩者都要），記下分析基準（分支／commit；工作區有未提交的 csproj／package.json 修改要在報告註明）。Angular 必須已 `npm install`，否則版本與授權讀不到。
-2. **跑收集腳本**（可一次給多個入口）：
+2. **跑收集腳本**（可一次給多個入口）：將 `<skill根目錄>` 替換成上述實際絕對路徑，入口與輸出路徑也使用目標專案的實際路徑。
    ```bash
-   PYTHONIOENCODING=utf-8 python -I ~/.claude/skills/generating-third-party-package-report/scripts/collect_packages.py <入口...> > <工作目錄>/packages.json
+   python -I "<skill根目錄>/scripts/collect_packages.py" <入口...> > "<工作目錄>/packages.json"
    ```
    輸出每個套件的 `versions`、`projects`、`category`、`meta.license`、`usage`（`status`、`files`、`byProject`、`samples`、`via`、`hint`）。`--include-first-party` 會連 `Microsoft.*`／`System.*` 一起列。
 3. **補齊授權**：`license` 為 `file:<路徑>` 時讀該檔判斷；空值或 `SEE LICENSE IN ...` 時讀套件內授權檔或查 nuget.org／npmjs.com。
